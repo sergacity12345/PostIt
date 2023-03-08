@@ -6,6 +6,4 @@ const port = process.env.PORT || 3500
 
 const server = http.createServer(app)
 
-server.listen(port, function(){
-    console.log(`Server runing on ${port}`)
-})
+server.listen(port)
