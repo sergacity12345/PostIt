@@ -89,13 +89,13 @@ router.post('/login/users',(req,res,next)=>{
                                     postContent:post.postDetails,
                                     request:{
                                         type:"GET",
+                                        for:"Individual post",
                                         url:`http://localhost:3500/postit/posts/${curr._id}?postId=${post._id}`
 
-                                    }
+                                    },
+                                    
                                 }
-                            }),
-                                // postId:posts._id
-                            
+                            }),                            
                             userId:curr._id,
                             request:{
                                 type:"GET",
