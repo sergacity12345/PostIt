@@ -112,10 +112,7 @@ router.get('/users/:userId',(req,res,next)=>{
                 })
              })
         }
-        // res.status(200).json({
-        //     message:"User Profile",
-
-        // })
+        
      })
      .catch(err=>{
         res.status(500).json({
