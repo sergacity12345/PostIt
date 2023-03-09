@@ -10,6 +10,8 @@ const bcrypt = require("bcrypt")
 
 const User = require("../Models/user")
 
+const jwt = require('jsonwebtoken')
+
 const mongoose = require('mongoose')
 
 
@@ -65,18 +67,50 @@ router.post('/signup/users',(req,res,next)=>{
 router.post('/login/users',(req,res,next)=>{
     User.find({email:req.body.email})
      .then(user=>{
-        res.status(200).json({
-            message:"Logged in successfully",
-            request:user.map(curr=>{
-                return{
-                    userId:curr._id,
-                    request:{
-                        type:"GET",
-                        url:'http://localhost:3500/postit/users/'+curr._id
-                    }
-                }
-            })
-        })
+        // const token = jwt.sign({
+        //     email:user.email,
+        //     userId:user._id
+        // },'secrete',
+        // {
+        //     expiresIn:"1h"
+        // })
+        if(user){
+            Post.find()
+             .select('userId postDetails')
+             .then(posts=>{
+                res.status(200).json({
+                    message:"Logged in successfully",
+                    details:user.map(curr=>{
+                        return{
+                            postsDetails:posts.map(post=>{
+                                return{
+                                    postId:post._id,
+                                    user:post.userId,
+                                    postContent:post.postDetails,
+                                    request:{
+                                        type:"GET",
+                                        url:`http://localhost:3500/postit/posts/${curr._id}?postId=${post._id}`
+
+                                    }
+                                }
+                            }),
+                                // postId:posts._id
+                            
+                            userId:curr._id,
+                            request:{
+                                type:"GET",
+                                url:'http://localhost:3500/postit/users/'+curr._id
+                            }
+
+                        }
+                    })
+                })
+             })
+             .catch(err=>{
+                res.status()
+             })
+           
+        }
      })
      .catch(err=>{
         res.status(500).json({
