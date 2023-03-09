@@ -96,7 +96,16 @@ router.patch('/posts/:userId',(req,res,next)=>{
         User.find({_id:userId})
          .then(user=>{
             if(user.length >= 1){
-                Post.find
+               Post.updateOne({_id:postId},{ postDetails:req.body.postit})
+                .then(update=>{
+                    res.status(202).json({
+                        message:"updated successfully",
+                        request:{
+                            type:"DELETE",
+                            url:`http://localhost:3500/postit/posts/${userId}?postId=${postId}&delete=${true}`
+                        }
+                    })
+                })
             }else{
                 res.status(404).json({
                     message:"User not found"
