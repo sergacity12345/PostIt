@@ -12,10 +12,10 @@ const User = require("../Models/user")
 
 
 const mongoose = require('mongoose')
-const e = require('express')
 
+const auth = require('../Authenticate/authenticate')
 
-router.post('/user/:userId/posts', (req,res,next)=>{
+router.post('/users/:userId/posts',auth, (req,res,next)=>{
     const userId = req.params.userId;
     User.find({_id:userId})
      .then(user=>{
@@ -39,7 +39,7 @@ router.post('/user/:userId/posts', (req,res,next)=>{
      })
 })
 
-router.get('/posts/:userId',(req,res,next)=>{
+router.get('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const userId = req.params.userId
     User.find({_id:userId})
@@ -91,7 +91,7 @@ router.get('/posts/:userId',(req,res,next)=>{
      })    
 })
 
-router.patch('/posts/:userId',(req,res,next)=>{
+router.patch('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const edit = req.query.edit
     const userId = req.params.userId
@@ -99,15 +99,21 @@ router.patch('/posts/:userId',(req,res,next)=>{
         User.find({_id:userId})
          .then(user=>{
             if(user.length >= 1){
-               Post.updateOne({_id:postId},{ postDetails:req.body.postit})
+               Post.updateOne({userId:postId},{ postDetails:req.body.postit})
                 .then(update=>{
-                    res.status(202).json({
-                        message:"updated successfully",
-                        request:{
-                            type:"DELETE",
-                            url:`http://localhost:3500/postit/posts/${userId}?postId=${postId}&delete=${true}`
-                        }
-                    })
+                    if(update.length >= 1){
+                        res.status(202).json({
+                            message:"updated successfully",
+                            request:{
+                                type:"DELETE",
+                                url:`http://localhost:3500/postit/posts/${userId}?postId=${postId}&delete=${true}`
+                            }
+                        })
+                    }else{
+                        res.status(500).json({
+                            message:"User not found"
+                        })
+                    }
                 })
                 .catch(err=>{
                     res.status(501).json({
@@ -128,7 +134,7 @@ router.patch('/posts/:userId',(req,res,next)=>{
     }
 })
 
-router.delete('/posts/:userId',(req,res,next)=>{
+router.delete('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const dele = req.query.delete
     const userId = req.params.userId

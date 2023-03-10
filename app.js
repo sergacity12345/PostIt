@@ -18,6 +18,8 @@ const userRouter = require('../PostIt/Routes/user')
 
 const postRouter = require('../PostIt/Routes/posts')
 
+const commentRouter = require("../PostIt/Routes/comment")
+
 app.use((req,res,next)=>{
     res.header("Access-Control-Allow-Origin", '*')
     res.header("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept, Authorization")
@@ -30,6 +32,7 @@ app.use((req,res,next)=>{
 
 app.use("/postit", userRouter)
 app.use('/postit',postRouter)
+app.use('/postit',commentRouter)
 
 // connecting to my database system 
 mongooseDb.set('strictQuery','false')

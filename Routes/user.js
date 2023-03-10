@@ -10,9 +10,11 @@ const bcrypt = require("bcrypt")
 
 const User = require("../Models/user")
 
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken")
 
 const mongoose = require('mongoose')
+
+const auth = require('../Authenticate/authenticate')
 
 
 router.post('/signup/users',(req,res,next)=>{
@@ -41,58 +43,53 @@ router.post('/signup/users',(req,res,next)=>{
                 password:req.body.password
             })
             user.save()
-             .then(result =>{
-                res.status(201).json({
-                    message:"User created",
-                    userDetails:result.map(curr=>{
-                        return{
-                            request:{
-                                type:'POST',
-                                url:'http://localhost:3500/postit/login/users'
-                            }
-                        }
-                    })
+             .then(result=>{
+                res.status(200).json({
+                    userInfo:result,
+                    message:"User signed up"
                 })
              })
-              .catch(err=>{
-                res.status(500).json({
-                    error:err
+             .catch(err=>{
+                res.status(404).json({
+                    error:'not reached'
                 })
-              })
+             })
         }
-     })
+      }) 
 })
 
 
 router.post('/login/users',(req,res,next)=>{
     User.find({email:req.body.email})
      .then(user=>{
-        // const token = jwt.sign({
-        //     email:user.email,
-        //     userId:user._id
-        // },'secrete',
-        // {
-        //     expiresIn:"1h"
-        // })
-        if(user){
+        if(user.length >= 1){
             Post.find()
              .select('userId postDetails')
              .then(posts=>{
+                /** We asigned a token to every logged in user using the email and userID*/ 
+                const token = jwt.sign({
+                    email:user.email,
+                    userId:user._id
+                },'secrete',
+                {
+                    expiresIn:"1h"
+                })
                 res.status(200).json({
                     message:"Logged in successfully",
+                    token:token,
                     details:user.map(curr=>{
                         return{
-                            postsDetails:posts.map(post=>{
+                            allPosts:posts.map(post=>{
                                 return{
                                     postId:post._id,
                                     user:post.userId,
                                     postContent:post.postDetails,
-                                    request:{
-                                        type:"GET",
-                                        for:"Individual post",
-                                        url:`http://localhost:3500/postit/posts/${curr._id}?postId=${post._id}`
+                                    // request:{
+                                    //     type:"GET",
+                                    //     for:"Individual post",
+                                    //     url:`http://localhost:3500/postit/posts/${curr._id}?postId=${post._id}`
 
-                                    },
+                                    // },
                                     
                                 }
                             }),                            
@@ -110,6 +107,10 @@ router.post('/login/users',(req,res,next)=>{
                 res.status()
              })
            
+        }else{
+            res.status(404).json({
+                message:"User not found"
+            })
         }
      })
      .catch(err=>{
@@ -119,12 +120,12 @@ router.post('/login/users',(req,res,next)=>{
      })
 })
 
-router.get('/users/:userId',(req,res,next)=>{
+router.get('/users/:userId', auth, (req,res,next)=>{
     const userId = req.params.userId
     User.find({_id:userId})
      .select('_id email name phonenumber')
      .then(user=>{
-        if(user){
+        if(user.length >= 1){
             Post.find({userId:userId})
              .then(resp=>{
                 res.status(200).json({
@@ -145,6 +146,10 @@ router.get('/users/:userId',(req,res,next)=>{
                     error:err
                 })
              })
+        }else{
+            res.status(404).json({
+                message:"User not found"
+            })
         }
         
      })
@@ -155,9 +160,9 @@ router.get('/users/:userId',(req,res,next)=>{
      })
 })
 
-router.delete('/user/:userId', (req,res,next)=>{
+router.delete('/users/:userId',auth, (req,res,next)=>{
     const userId = req.params.userId;
-    User.delete({_id:userId})
+    User.deleteOne({_id:userId})
      .then(result=>{
         res.status(410).json({
             message:"User deleted"
