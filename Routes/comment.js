@@ -12,11 +12,12 @@ const bcrypt = require("bcrypt")
 
 const User = require("../Models/user")
 
+const auth = require("../Authenticate/authenticate")
 
 const mongoose = require('mongoose')
 
 /** We find a post using the ID we got from the url to know if we have such post on our DB */
-router.post('/comments/:postId',(req,res,next)=>{
+router.post('/comments/:postId',auth,(req,res,next)=>{
     const postId = req.params.postId;
     const userId = req.query.userId
     Post.find({_id:postId})
@@ -49,7 +50,7 @@ router.post('/comments/:postId',(req,res,next)=>{
 })
 
 /** We get all comments of a particular USER that POST using the postID to know if we have such post with any comment */ 
-router.get('/comments/:userId', (req,res,next)=>{
+router.get('/comments/:userId', auth,(req,res,next)=>{
     const userId = req.params.userId;
     const postId = req.query.postId
     User.find({_id:userId})
@@ -93,7 +94,7 @@ router.get('/comments/:userId', (req,res,next)=>{
 })
 
 /** Here we get individual comment using their ID to check if any comment with such ID is found on our DB and also check for the user with UserID*/
-router.get('/comments/comment/:userId/',(req,res,next)=>{
+router.get('/comments/comment/:userId/',auth,(req,res,next)=>{
     const commentId = req.query.commentId
     const userId = req.params.userId
     
@@ -123,12 +124,67 @@ router.get('/comments/comment/:userId/',(req,res,next)=>{
         })
      })
 })
+/** We EDIT our comment here. Only a user that has commented can be able to access this API since we will look out for the users ID in the comment collections.*/ 
+router.patch('/comments/comment/:userId/edit',auth,(req,res,next)=>{
+    const userId = req.params.userId
+    const commentId = req.query.commentId;
+    const edit = req.query.edit
+    if(edit){
+        Comment.find({_id:commentId,userId:userId})
+         .then(result=>{
+            if(result.length < 1){
+                return res.status(404).json({
+                    message:"No comment found to edit"
+                })
+            }
+            Comment.updateOne({_id:commentId},{ comment:req.body.comment})
+             .then(successful=>{
+                if(successful.length < 1){
+                    res.status(404).json({
+                        message:"Cant edit comment"
+                    })
+                    
+                }else{
+                    res.status(202).json({
+                        message:"Updated successfully"
+                    })
+                }
+             })
+             .catch(err=>{
+                res.status(500).json({
+                    error:err
+                })
+             })
+         })
+         .catch(err=>{
+            res.status(500).json({
+                error:err
+            })
+         })
+    }
+})
 
 
-router.delete('/comments/comment/:userId/',(req,res,next)=>{
+/** We DELETE our comment here. Only a user that has commented can be able to access this API since we will look out for the users ID in the comment collections.*/ 
+router.delete('/comments/comment/:userId/',auth,(req,res,next)=>{
     const userId = req.params.userId
     const commentId = req.query.commentId
-    
+    Comment.deleteOne({userId:userId, _id:commentId})
+     .then(comments=>{
+        if(comments.length <= 1){
+            return res.status(404).json({
+                message:"Cant delete comment"
+            })
+        }
+        res.status(200).json({
+            message:"Comment deleted successfully"
+        })
+     })
+     .catch(err=>{
+        res.status(500).json({
+            error:err
+        })
+     })
 })
 
 
