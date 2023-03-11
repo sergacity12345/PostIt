@@ -14,10 +14,9 @@ app.use(morgan("dev"))
 app.use(bodyParser.urlencoded({extended:false}))
 app.use(bodyParser.json())
 
+/** Here we import all our Routes files.js*/ 
 const userRouter = require('../PostIt/Routes/user')
-
 const postRouter = require('../PostIt/Routes/posts')
-
 const commentRouter = require("../PostIt/Routes/comment")
 
 app.use((req,res,next)=>{
@@ -34,7 +33,7 @@ app.use("/postit", userRouter)
 app.use('/postit',postRouter)
 app.use('/postit',commentRouter)
 
-// connecting to my database system 
+/**  connecting to my MongoDB Compas for data management */ 
 mongooseDb.set('strictQuery','false')
 mongooseDb.connect("mongodb://localhost:27017/PostIt"
 )

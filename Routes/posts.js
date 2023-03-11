@@ -15,6 +15,7 @@ const mongoose = require('mongoose')
 
 const auth = require('../Authenticate/authenticate')
 
+/** While working with this API ROUTES, we use the USER ID gotten from the URL as PARAMS. If USER is found we proceed by POSTING the information we want to store at the POST DB. As we post, the USER ID is also stored on the POST DB  to signify the user that made that particular post. When successful, a message is displayed.*/
 router.post('/users/:userId/posts',auth, (req,res,next)=>{
     const userId = req.params.userId;
     User.find({_id:userId})
@@ -91,6 +92,7 @@ router.get('/posts/:userId',auth,(req,res,next)=>{
      })    
 })
 
+/** While working with this API ROUTES , we check if the  QUERY is EDIT. If it is, we can continue working with it by finding a USER with the ID gotten from the URL. If USER is found we proceed by UPDATING  that POST(from the information passed theough the body) using the ID gotten from the URL. If successful a message, we will get a message.*/
 router.patch('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const edit = req.query.edit
@@ -134,6 +136,7 @@ router.patch('/posts/:userId',auth,(req,res,next)=>{
     }
 })
 
+/** While working with this API ROUTES , we check if the  QUERY is DELETE. If it is, we can continue working with it by finding a USER with the ID gotten from the URL. If USER is found we proceed by DELETING  a POST using the ID gotten from the URL. If successful a message, we will get a message.*/ 
 router.delete('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const dele = req.query.delete
