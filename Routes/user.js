@@ -162,6 +162,42 @@ router.get('/users/:userId', auth, (req,res,next)=>{
      })
 })
 
+router.patch('/users/:userId',auth, (req,res,next)=>{
+    const userId = req.params.userId;
+    User.find({_id:userId})
+     .then(user=>{
+        if(user.length < 1){
+            return res.status(404).json({
+                message:"User not found"
+            })
+        }
+        User.updateOne({_id:userId},{email:req.body.email},{name:req.body.name},{phonenumber:req.body.phonenumber},{password:req.body.password})
+        .then(successful=>{
+            if(successful.length < 1){
+                res.status(404).json({
+                    message:"Cant edit user"
+                })
+                
+            }else{
+                res.status(202).json({
+                    message:"Updated successfully"
+                })
+            }
+         })
+         .catch(err=>{
+            res.status(500).json({
+                error:err
+            })
+         })
+     })
+     .catch(err=>{
+        res.status(500).json({
+            error:err
+        })
+     })
+
+})
+
 /** Deleting a particular USER using the ID passed in the URL. When we successfully DELETE the USER with such ID , it will display a success message notifying us that such USER is no more */
 router.delete('/users/:userId',auth, (req,res,next)=>{
     const userId = req.params.userId;

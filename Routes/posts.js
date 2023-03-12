@@ -36,6 +36,10 @@ router.post('/users/:userId/posts',auth, (req,res,next)=>{
                     error:err
                 })
              })
+        }else{
+            res.status(404).json({
+                message:"Not found"
+            })
         }
      })
 })
