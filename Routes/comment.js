@@ -20,33 +20,40 @@ const mongoose = require('mongoose')
 router.post('/comments/:postId',auth,(req,res,next)=>{
     const postId = req.params.postId;
     const userId = req.query.userId
-    Post.find({_id:postId})
-     .then(post=>{
-        if(post.length >= 1){
+    User.find({_id:userId})
+     .then(user=>{
+        if(user.length < 1){
+            res.status(404).json({
+                message:"User not found"
+            })
+        }
+        Post.find({_id:postId})
+         .then(post => {
+            if(post.length <1 ){
+                res.status(404).json({
+                    message:"Post not found"
+                })  
+            }
             const comments = new Comment({
                 userId:userId,
                 postId:postId,
                 comment:req.body.comment
             })
             return comments.save()
-        }
-     })   
-     .then(comment=>{
-        res.status(201).json({
-            message:"Commented successfully",
-            commentInfo:{
-                userId:comment.userId,
-                postId:comment.postId,
-                comment:comment.comment,
-                commentId:comment._id
-            }
-        })
-     }) 
-     .catch(err=>{
-        res.status(500).json({
-            error:err
-        })
+         })
+         .then(comment=>{
+            res.status(201).json({
+                message:"commented succesfully",
+                comment
+            })
+         })
      })
+     .catch(err=>{
+            res.status(500).json({
+                error:err
+            })
+         })
+
 })
 
 /** We get all comments of a particular USER that POST using the postID to know if we have such post with any comment */ 
@@ -113,8 +120,8 @@ router.get('/comments/comment/:userId/',auth,(req,res,next)=>{
             })
          })
          .catch(err=>{
-            res.status(500).json({
-                error:err
+            res.status(404).json({
+                message:"No comment found"
             })
          })
      })

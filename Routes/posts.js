@@ -28,7 +28,8 @@ router.post('/users/:userId/posts',auth, (req,res,next)=>{
             post.save()
              .then(resp=>{
                 res.status(201).json({
-                    message:"Posted successfully"
+                    message:"Posted successfully",
+                    Details:resp
                 })
              })
              .catch(err=>{
@@ -43,7 +44,7 @@ router.post('/users/:userId/posts',auth, (req,res,next)=>{
         }
      })
 })
-
+/** Getting a single post using the post ID*/
 router.get('/posts/:userId',auth,(req,res,next)=>{
     const postId = req.query.postId
     const userId = req.params.userId
@@ -105,21 +106,20 @@ router.patch('/posts/:userId',auth,(req,res,next)=>{
         User.find({_id:userId})
          .then(user=>{
             if(user.length >= 1){
-               Post.updateOne({userId:postId},{ postDetails:req.body.postit})
+               Post.updateOne({userId:userId},{ postDetails:req.body.postit})
                 .then(update=>{
-                    if(update.length >= 1){
-                        res.status(202).json({
-                            message:"updated successfully",
-                            request:{
-                                type:"DELETE",
-                                url:`http://localhost:3500/postit/posts/${userId}?postId=${postId}&delete=${true}`
-                            }
-                        })
-                    }else{
+                    if(update.length < 1){
                         res.status(500).json({
                             message:"User not found"
                         })
                     }
+                    res.status(202).json({
+                        message:"updated successfully",
+                        request:{
+                            type:"DELETE",
+                            url:`http://localhost:3500/postit/posts/${userId}?postId=${postId}&delete=${true}`
+                        }
+                    })
                 })
                 .catch(err=>{
                     res.status(501).json({
@@ -151,19 +151,20 @@ router.delete('/posts/:userId',auth,(req,res,next)=>{
             if(user.length >= 1){
                Post.deleteOne({_id:postId})
                 .then(doc=>{
-                    if(doc.length >= 1){
-                        res.status(200).json({
-                            message:"Post Deleted",
-                            request:{
-                                type:"GET",
-                                url:`http://localhost:3500/postit/user/${userId}`
-                            }
-                        })
-                    }else{
+                    if(doc.length < 1){
                         res.status(404).json({
                             message:"No post found"
                         })
+                        
                     }
+                    res.status(200).json({
+                        message:"Post Deleted",
+                        request:{
+                            type:"GET",
+                            url:`http://localhost:3500/postit/user/${userId}`
+                        }
+                    })
+                    
                 })
             }else{
                 res.status(404).json({
