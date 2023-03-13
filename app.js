@@ -15,9 +15,9 @@ app.use(bodyParser.urlencoded({extended:false}))
 app.use(bodyParser.json())
 
 /** Here we import all our Routes files.js*/ 
-const userRouter = require('../PostIt/Routes/user')
-const postRouter = require('../PostIt/Routes/posts')
-const commentRouter = require("../PostIt/Routes/comment")
+const userRouter = require('./Routes/user')
+const postRouter = require('./Routes/posts')
+const commentRouter = require("./Routes/comment")
 
 app.use((req,res,next)=>{
     res.header("Access-Control-Allow-Origin", '*')
